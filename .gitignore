@@ -4,3 +4,7 @@
 /.vs/ThreeJS-PWA-ECS-Surface-Stable-Dithering/CopilotIndices
 /shaders copied from Unity-SDF-Fractal-Dithering
 /.vs
+/.vite
+/dist/assets
+/node_modules/.bin
+/node_modules

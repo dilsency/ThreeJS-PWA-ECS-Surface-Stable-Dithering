@@ -100,7 +100,6 @@ export class EntityComponentPlayerController extends EntityComponent
         // early return: no entity component instance
         if(componentInstanceCameraControllerFirstPerson == null){return;}
 
-
         // a result variable
         // we modify this
         // and then .SetPosition in the end
@@ -118,6 +117,8 @@ export class EntityComponentPlayerController extends EntityComponent
             positionResult.addScaledVector(componentInstanceCameraControllerFirstPerson.directionForwardNonvertical, 0.05 * indexMovingOnForwardBackwardAxis);
             //this.#params.cameraPivot.position.addScaledVector(componentInstanceCameraControllerFirstPerson.directionForwardNonvertical, 0.05 * indexMovingOnForwardBackwardAxis);
         }
+
+
 
         // we can use this index to determine if we should move in the first place
         // and also
@@ -143,14 +144,20 @@ export class EntityComponentPlayerController extends EntityComponent
             //this.#params.cameraPivot.position.y -= 0.05;
         }
 
+
         // early return: we don't do anything if we don't have anything
         const isSameX = (this.#params.cameraPivot.position.x == positionResult.x);
         const isSameY = (this.#params.cameraPivot.position.y == positionResult.y);
         const isSameZ = (this.#params.cameraPivot.position.z == positionResult.z);
-        if(isSameX && isSameY && isSameZ){return;}
+        if (isSameX && isSameY && isSameZ) { return; }
+
+
 
         // we simply set the position once, at the end
         // this radiates to all entity_components that has registered that event
         this.methodSetPosition(positionResult);
+
+
+
     }
 }

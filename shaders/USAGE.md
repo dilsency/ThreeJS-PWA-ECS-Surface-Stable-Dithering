@@ -56,5 +56,10 @@ init().catch(console.error);
 
 Notes:
 - If you use a bundler that supports importing raw text (e.g. Vite's `?raw`), you can fetch shader sources with that instead and use `createFractalMaterialFromSources(vertSource, fragSource, opts)`.
+
+  // Vite example (raw import):
+  // import vertSource from './Simple_FractalDithering.vert?raw';
+  // import fragSource from './Simple_FractalDithering.frag?raw';
+  // const mat = createFractalMaterialFromSources(vertSource, fragSource, { map: texture });
 - If you run into shader compilation errors referencing `#version`, make sure you create the material with `glslVersion: THREE.GLSL3` (the factory does this already) and use a WebGL2 renderer context.
 

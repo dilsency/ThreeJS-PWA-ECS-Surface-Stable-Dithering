@@ -2,6 +2,10 @@
 // base
 import * as THREE from "three";
 
+// dynamicInstance.mjs
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 // ECS architecture
 // https://keep.google.com/u/0/#NOTE/1VZcHow6i1CL34hbKCEnhdlomP1MtBxrzssvUT4wwMWJLCXrubqAjogXsTz7MCC4
 
@@ -73,6 +77,10 @@ export class Entity
     {
         return this.#parent.methodGetEntitiesWithComponentAndSuffix(paramComponentName, paramComponentNameSuffix, paramEntityNameToExclude);
     }
+
+    // vite preview
+    // the names will be re-generated and searching by name will not match... what to do?
+    // we could loop through all components and check their parameters?
     methodGetComponent(paramComponentName)
     {
         // we COULD assume the component could have a suffix
@@ -159,19 +167,36 @@ export class Entity
 
     methodAddComponent(paramComponent)
     {
-        // first, we update the parent prop of the component, to be this
-        paramComponent.methodSetParent(this);
-
-        // then we add it at the correct index
+        // add it at the correct index
         // note that we can only have 1 component instance of each component class this way...
         // ...which seems to be fine ?
         // we make new components that are lists of other components, instead
         // semi-clunky, but easier with searches and such
-        this.#components[paramComponent.constructor.name] = paramComponent;
+        const name = paramComponent.constructor.name;
+        this.methodAddComponentWithName(name, paramComponent);
+    }
+    methodAddComponentWithName(paramComponentName, paramComponent)
+    {
+        console.log("add new component");
+        console.log("\t" + paramComponentName);
+
+        // first, we update the parent prop of the component, to be this
+        paramComponent.methodSetParent(this);
+
+        // add it at the correct index
+        this.#components[paramComponentName] = paramComponent;
+
+        // debug: log component addition (helps detect missing initializations in production builds)
+        /*try {
+            console.log(`Entity.methodAddComponent: adding component ${paramComponent.constructor.name} to entity ${this.#name}`);
+        } catch (e) {
+            console.log('Entity.methodAddComponent: added component (name unavailable)');
+        }*/
 
         // then we can initialize the component
         paramComponent.methodInitialize();
     }
+
     methodAddComponentWithSuffix(paramComponent, paramComponentNameSuffix)
     {
         // in case we do want multiples of each

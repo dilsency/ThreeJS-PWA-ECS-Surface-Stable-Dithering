@@ -27,10 +27,20 @@ export class EntityComponentCameraControllerFirstPersonInput extends EntityCompo
             reset: false,
         };
 
-        document.addEventListener('keydown', (e) => this.methodEventOnKeyDown(e), false);
-        document.addEventListener('keyup', (e) => this.methodEventOnKeyUp(e), false);
-        //
-        document.addEventListener('mousemove', (e) => this.methodEventOnMouseMove(e), false);
+        // Attach listeners to document and window to be robust across dev/preview builds
+        const keyDownHandler = (e) => this.methodEventOnKeyDown(e);
+        const keyUpHandler = (e) => this.methodEventOnKeyUp(e);
+        const mouseMoveHandler = (e) => this.methodEventOnMouseMove(e);
+
+        document.addEventListener('keydown', keyDownHandler, false);
+        document.addEventListener('keyup', keyUpHandler, false);
+        document.addEventListener('mousemove', mouseMoveHandler, false);
+
+        // Some environments deliver global keyboard events to window instead of document
+        // (depending on focus). Listen on both to improve reliability in production builds.
+        window.addEventListener('keydown', keyDownHandler, false);
+        window.addEventListener('keyup', keyUpHandler, false);
+        window.addEventListener('mousemove', mouseMoveHandler, false);
     }
 
     methodEventOnKeyDown(e)

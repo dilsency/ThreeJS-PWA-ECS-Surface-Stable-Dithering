@@ -3,7 +3,11 @@
 import * as THREE from "three";
 // ECS
 import {EntityComponent} from "entity_component";
-import { createFractalMaterial } from "../shaders/Simple_FractalDithering.js";
+import { createFractalMaterial, createFractalMaterialFromSources } from "../shaders/Simple_FractalDithering.js";
+// Vite-style raw imports (bundles shader text at build time). Keep these so the
+// shader sources are available as strings without runtime fetch.
+import vertSource from "../shaders/Simple_FractalDithering.vert?raw";
+import fragSource from "../shaders/Simple_FractalDithering.frag?raw";
 
 //
 export class EntityComponentTestCube extends EntityComponent
@@ -13,7 +17,10 @@ export class EntityComponentTestCube extends EntityComponent
 
     //
     #cube = null;
-    #positionOffset = {x:0,y:0,z:0};
+    #positionOffset = { x: 0, y: 0, z: 0 };
+
+    //
+    #nameLastLetterAsInt = null;
 
     // construct
     constructor(params)
@@ -32,52 +39,57 @@ export class EntityComponentTestCube extends EntityComponent
 
     async methodInitialize()
     {
-        console.log("EntityComponentTestCube: methodInitialize");
+        //
+        const name = this.methodGetName();
+        const nameLastLetter = name.charAt(name.length - 1);
+        this.#nameLastLetterAsInt = nameLastLetter.charCodeAt(0);
 
-        try {
-            console.log("try started");
-
-            const [vert, frag] = await Promise.all([
-                fetch('shaders/Simple_FractalDithering.vert').then(r => r.text()),
-                fetch('shaders/Simple_FractalDithering.frag').then(r => r.text())
-            ]);
-
-            /*
-            const uniforms = {
-                uMainTex:
-                {
-                    value:
-                        new THREE.TextureLoader().load("textures/texture.png")
-                },
-            };
-            */
-
+        //
             const geometry = new THREE.BoxGeometry( 1, 1, 1 );
 
             const loader = new THREE.TextureLoader();
-            const texture = await new Promise((res, rej) => loader.load('textures/texture_checkerboard.png', res, undefined, rej));
+            // Resolve texture URL via import.meta.url so Vite will include the asset
+            // in the build output. This works in dev and in the production build.
+            let texUrl;
+            try {
+                texUrl = new URL('../textures/texture_checkerboard.png', import.meta.url).href;
+            } catch (e) {
+                // Fallback: use path relative to server root
+                texUrl = 'textures/texture_checkerboard.png';
+            }
+            const texture = await new Promise((res, rej) => loader.load(texUrl, res, undefined, rej));
 
+            // Prefer bundler raw imports (Vite: ?raw) to avoid runtime fetches.
+            // However, built output may sometimes emit shader assets instead of inlining
+            // the raw strings. Detect that case and fall back to the runtime-fetching
+            // factory if the imported sources are not plain strings.
             let material;
             try {
-                console.log("try to create shader material : ");
-                material = await createFractalMaterial({ map: texture, level: 3, shape: 9, });
-                //material = createFractalMaterial({ map: uniforms.uMainTex.value });
-                console.log(material);
+                const isVertString = typeof vertSource === 'string';
+                const isFragString = typeof fragSource === 'string';
 
-                /*
-                material = new THREE.RawShaderMaterial({
-                    vertexShader: vert,
-                    fragmentShader: frag,
-                    uniforms,
-                    glslVersion: THREE.GLSL3
-                });
-                */
+                // Heuristic: if the imported string looks like actual GLSL source (contains newlines
+                // or shader keywords) treat it as source. If it looks like a URL/path (no newlines,
+                // short, or ends with .vert/.frag), treat it as an asset URL and let the runtime fetch
+                // loader load it from that URL.
+                const looksLikeSource = (s) => typeof s === 'string' && (s.includes('\n') || s.includes('void main') || s.length > 500);
 
-                console.log("successful shader?");
-            } catch (e) {
-                console.error('Shader creation failed, falling back to basic material.', e);
-                material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+                if (isVertString && isFragString && looksLikeSource(vertSource) && looksLikeSource(fragSource)) {
+                    // Inlined shader sources (dev or bundle-inlined)
+                    material = createFractalMaterialFromSources(vertSource, fragSource, { map: texture, level: 3, shape: 9 });
+                } else if (isVertString && isFragString) {
+                    // Likely URLs emitted by the build. Use the runtime factory with explicit URLs.
+                    material = await createFractalMaterial({ map: texture, level: 3, shape: 9, vertUrl: vertSource, fragUrl: fragSource });
+                } else {
+                    // fallback: runtime fetch (works with any static server)
+                    material = await createFractalMaterial({ map: texture, level: 3, shape: 9 });
+                }
+            } catch (err) {
+                // If anything goes wrong, fall back to runtime-fetching factory.
+                console.warn('Shader raw import failed or unavailable, using runtime fetch fallback.', err);
+                material = await createFractalMaterial({ map: texture, level: 3, shape: 9 });
             }
+            
 
             this.#cube = new THREE.Mesh(geometry, material);
             this.#params.scene.add(this.#cube);
@@ -86,25 +98,17 @@ export class EntityComponentTestCube extends EntityComponent
             this.#cube.position.y += this.#positionOffset.y;
             this.#cube.position.z += this.#positionOffset.z;
 
-            this.methodRegisterInvokableHandler('update.position', (paramMessage) =>{ this.methodHandleUpdatePosition(paramMessage);});
-        } catch (err) {
-            console.error('Failed to load shaders, using fallback material.', err);
-            const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-            this.#cube = new THREE.Mesh(geometry, material);
-            this.#params.scene.add(this.#cube);
-
-            this.#cube.position.x += this.#positionOffset.x;
-            this.#cube.position.y += this.#positionOffset.y;
-            this.#cube.position.z += this.#positionOffset.z;
-
-            this.methodRegisterInvokableHandler('update.position', (paramMessage) =>{ this.methodHandleUpdatePosition(paramMessage);});
-        }
+            this.methodRegisterInvokableHandler('update.position', (paramMessage) =>{ this.methodHandleUpdatePosition(paramMessage); });
+        
     }
 
     methodUpdate(timeElapsed, timeDelta)
     {
-        //this.#cube.rotation.y += timeDelta;
+        // early return
+        if (this.#cube == null) { return; }
+
+        //
+        this.#cube.rotation.y += timeDelta * (this.#nameLastLetterAsInt % 2 == 0 ? 1 : -1);
     }
 
     // handlers
