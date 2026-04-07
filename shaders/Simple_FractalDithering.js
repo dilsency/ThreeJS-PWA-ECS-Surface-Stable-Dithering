@@ -23,10 +23,17 @@ export async function createFractalMaterial(opts = {}) {
     var fragSource = "";
 
     try {
+        // changed
+        //new URL('./Simple_FractalDithering.vert', import.meta.url)
+        //new URL('./Simple_FractalDithering.frag', import.meta.url)
+        // to
+        //new URL('./Simple_FractalDithering.vert?raw', import.meta.url)
+        //new URL('./Simple_FractalDithering.frag?raw', import.meta.url)
+
         vertSource = opts.vertexShader || opts.vertexShaderSource ||
-            (opts.vertUrl ? await loadText(opts.vertUrl) : await loadText(new URL('./Simple_FractalDithering.vert', import.meta.url)));
+            (opts.vertUrl ? await loadText(opts.vertUrl) : await loadText(new URL('./Simple_FractalDithering.vert?raw', import.meta.url)));
         fragSource = opts.fragmentShader || opts.fragmentShaderSource ||
-            (opts.fragUrl ? await loadText(opts.fragUrl) : await loadText(new URL('./Simple_FractalDithering.frag', import.meta.url)));
+            (opts.fragUrl ? await loadText(opts.fragUrl) : await loadText(new URL('./Simple_FractalDithering.frag?raw', import.meta.url)));
     }
     catch (e) {
         console.error(e);

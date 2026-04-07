@@ -41,5 +41,6 @@ export default defineConfig({
   build: {
     // keep default options; adjust outDir if you prefer a different folder
     outDir: 'dist',
-  },
+    },
+    assetsInclude: ['**/*.frag', '**/*.vert'], // treat as assets
 });
