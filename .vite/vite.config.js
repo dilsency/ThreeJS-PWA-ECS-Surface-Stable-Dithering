@@ -6,9 +6,11 @@ import { defineConfig } from 'vite';
 // - ?raw imports for shader files work out of the box with Vite.
 
 // base: process.env.BASE_URL || './',
+//    base: "/ThreeJS-PWA-ECS-Surface-Stable-Dithering/",
+// 
 
 export default defineConfig({
-    base: "/ThreeJS-PWA-ECS-Surface-Stable-Dithering/",
+    base: process.env.BASE_URL || './',
   server: {
     port: 5173,
     open: true,
@@ -26,11 +28,14 @@ export default defineConfig({
       // Alternative: Convert all imports to explicit relative paths and remove
       // both the importmap and these aliases. That is the most portable
       // approach but requires updating many import statements in the source.
+      
       'entity_manager': '/classes/ECS/entity_manager.js',
       'entity': '/classes/ECS/entity.js',
       'entity_component': '/classes/ECS/entity_component.js',
       'player': '/entity components/player_controller.js',
-      'camera': '/entity components/camera_controller_first_person.js'
+          'camera': '/entity components/camera_controller_first_person.js',
+
+          'url': 'url'
     }
   },
   build: {

@@ -18,10 +18,21 @@ async function loadText(url) {
 // - vertUrl / fragUrl: URLs to fetch shader sources
 // Returns Promise<THREE.RawShaderMaterial>
 export async function createFractalMaterial(opts = {}) {
-  const vertSource = opts.vertexShader || opts.vertexShaderSource ||
-    (opts.vertUrl ? await loadText(opts.vertUrl) : await loadText(new URL('./Simple_FractalDithering.vert', import.meta.url)));
-  const fragSource = opts.fragmentShader || opts.fragmentShaderSource ||
-    (opts.fragUrl ? await loadText(opts.fragUrl) : await loadText(new URL('./Simple_FractalDithering.frag', import.meta.url)));
+
+    var vertSource = "";
+    var fragSource = "";
+
+    try {
+        vertSource = opts.vertexShader || opts.vertexShaderSource ||
+            (opts.vertUrl ? await loadText(opts.vertUrl) : await loadText(new URL('./Simple_FractalDithering.vert', import.meta.url)));
+        fragSource = opts.fragmentShader || opts.fragmentShaderSource ||
+            (opts.fragUrl ? await loadText(opts.fragUrl) : await loadText(new URL('./Simple_FractalDithering.frag', import.meta.url)));
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error('Failed to load shader sources. Check console for details.');
+    }
+
 
   const uniforms = {
     uMainTex: { value: opts.map || new THREE.Texture() },
