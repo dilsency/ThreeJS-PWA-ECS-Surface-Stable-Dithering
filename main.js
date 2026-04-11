@@ -110,46 +110,46 @@ function init()
 
     //
     function initEntityComponents()
-    {
-        //
-        console.log("init Entities");
+{
+    //
+    console.log("init Entities");
 
-        //
-        const entityA = new Entity(null);
-        entityManager.methodAddEntity(entityA);
-        //
-        entityA.methodAddComponent(new EntityComponentCameraControllerFirstPerson({scene: scene, camera: camera, cameraPivot: cameraPivot,}));
-        entityA.methodAddComponent(new EntityComponentCameraControllerFirstPersonInput());
-        //
-        entityA.methodAddComponent(new EntityComponentPlayerController({cameraPivot: cameraPivot,}));
-        entityA.methodAddComponent(new EntityComponentPlayerControllerInput());
+    //
+    const entityA = new Entity(null);
+    entityManager.methodAddEntity(entityA);
+    //
+    entityA.methodAddComponentWithName("EntityComponentCameraControllerFirstPerson", new EntityComponentCameraControllerFirstPerson({scene: scene, camera: camera, cameraPivot: cameraPivot,}));
+    entityA.methodAddComponentWithName("EntityComponentCameraControllerFirstPersonInput", new EntityComponentCameraControllerFirstPersonInput());
+    //
+    entityA.methodAddComponentWithName("EntityComponentPlayerController", new EntityComponentPlayerController({cameraPivot: cameraPivot,}));
+    entityA.methodAddComponentWithName("EntityComponentPlayerControllerInput", new EntityComponentPlayerControllerInput());
 
-        entityA.methodSetPosition(new THREE.Vector3(0.0,0.0,5.0));
-        //
+    entityA.methodSetPosition(new THREE.Vector3(0.0,0.0,5.0));
+    //
 
-        //
-        const entityB = new Entity(null);
-        entityManager.methodAddEntity(entityB);
-        entityB.methodAddComponent(new EntityComponentTestCube({scene:scene,name:"model",}));
-        
-        //
-        const entityC = new Entity(null);
-        entityManager.methodAddEntity(entityC);
-        entityC.methodAddComponent(new EntityComponentButtonPointerLock({document:document,renderer:renderer,}));
-        
-        const entityD = new Entity(null);
-        entityManager.methodAddEntity(entityD);
-        entityD.methodSetPosition({x:-10,y:0,z:-10,});
+    //
+    const entityB = new Entity(null);
+    entityManager.methodAddEntity(entityB);
+    entityB.methodAddComponentWithName("EntityComponentTestCube", new EntityComponentTestCube({scene:scene,name:"model",}));
+    
+    //
+    const entityC = new Entity(null);
+    entityManager.methodAddEntity(entityC);
+    entityC.methodAddComponentWithName("EntityComponentButtonPointerLock", new EntityComponentButtonPointerLock({document:document,renderer:renderer,}));
+    
+    const entityD = new Entity(null);
+    entityManager.methodAddEntity(entityD);
+    entityD.methodSetPosition({x:-10,y:0,z:-10,});
 
-        // sceneHUD
+    // sceneHUD
 
-        const entityHUD = new Entity(null);
-        entityManager.methodAddEntity(entityHUD);
-        entityHUD.methodAddComponent(new EntityComponentTestCube({scene:sceneHUD,name:"model",
-            //positionOffset:{x:-3.0,y:-1.5,z:-3.0},
-            positionOffset:{x:-0,y:-0,z:-10.0},
-        }));
-    }
+    const entityHUD = new Entity(null);
+    entityManager.methodAddEntity(entityHUD);
+    entityHUD.methodAddComponentWithName("EntityComponentTestCube", new EntityComponentTestCube({scene:sceneHUD,name:"model",
+        //positionOffset:{x:-3.0,y:-1.5,z:-3.0},
+        positionOffset:{x:-0,y:-0,z:-10.0},
+    }));
+}
 
     //
     initBareMinimum();

@@ -73,44 +73,48 @@ export class Entity
     {
         return this.#parent.methodGetEntitiesWithComponentAndSuffix(paramComponentName, paramComponentNameSuffix, paramEntityNameToExclude);
     }
-    methodGetComponent(paramComponentName)
-    {
-        // we COULD assume the component could have a suffix
-        if(paramComponentName.includes("__"))
-        {
-            const split = nameExcludingSuffix.split("__");
-            return this.methodGetComponentsWithSuffix(split[0], split[1]);
-        }
 
-        // this is the normal one
-        return this.#components[paramComponentName];
-    }
-    methodGetComponentWithSuffix(paramComponentName, paramComponentNameSuffix)
+    // vite futureproofing
+// the names will be re-generated and searching by name will not match... what to do?
+// we could loop through all components and check their parameters?
+methodGetComponent(paramComponentName)
+{
+    // we COULD assume the component could have a suffix
+    if(paramComponentName.includes("__"))
     {
-        // here we return specifically that component
-        return this.#components[paramComponentName + "__" + paramComponentNameSuffix];
+        const split = nameExcludingSuffix.split("__");
+        return this.methodGetComponentsWithSuffix(split[0], split[1]);
     }
-    methodGetComponentsWithSuffix(paramComponentName, paramComponentNameSuffix)
+
+    // this is the normal one
+    return this.#components[paramComponentName];
+}
+methodGetComponentWithSuffix(paramComponentName, paramComponentNameSuffix)
+{
+    // here we return specifically that component
+    return this.#components[paramComponentName + "__" + paramComponentNameSuffix];
+}
+methodGetComponentsWithSuffix(paramComponentName, paramComponentNameSuffix)
+{
+    // here we need to loop through all components that match
+    // and return a list
+    // EXCLUDING suffix
+    var nameExcludingSuffix = paramComponentName;
+    if(nameExcludingSuffix.includes("__"))
     {
-        // here we need to loop through all components that match
-        // and return a list
-        // EXCLUDING suffix
-        var nameExcludingSuffix = paramComponentName;
-        if(nameExcludingSuffix.includes("__"))
-        {
-            nameExcludingSuffix = nameExcludingSuffix.split("__")[0];
-        }
-        const res = [];
-        // javascript version of foreach loop
-        for(const iterator of this.#components)
-        {
-            if(iterator == nameExcludingSuffix)
-            {
-                res.push(iterator);
-            }
-        }
-        return res;
+        nameExcludingSuffix = nameExcludingSuffix.split("__")[0];
     }
+    const res = [];
+    // javascript version of foreach loop
+    for(const iterator of this.#components)
+    {
+        if(iterator == nameExcludingSuffix)
+        {
+            res.push(iterator);
+        }
+    }
+    return res;
+}
     methodGetParent(){return this.#parent;}
     methodGetName(){return this.#name;}
     methodGetPosition(){return this.#position;}
@@ -159,19 +163,36 @@ export class Entity
 
     methodAddComponent(paramComponent)
     {
-        // first, we update the parent prop of the component, to be this
-        paramComponent.methodSetParent(this);
-
-        // then we add it at the correct index
+        // add it at the correct index
         // note that we can only have 1 component instance of each component class this way...
         // ...which seems to be fine ?
         // we make new components that are lists of other components, instead
         // semi-clunky, but easier with searches and such
-        this.#components[paramComponent.constructor.name] = paramComponent;
+        const name = paramComponent.constructor.name;
+        this.methodAddComponentWithName(name, paramComponent);
+    }
+    methodAddComponentWithName(paramComponentName, paramComponent)
+    {
+        console.log("add new component");
+        console.log("\t" + paramComponentName);
+
+        // first, we update the parent prop of the component, to be this
+        paramComponent.methodSetParent(this);
+
+        // add it at the correct index
+        this.#components[paramComponentName] = paramComponent;
+
+        // debug: log component addition (helps detect missing initializations in production builds)
+        /*try {
+            console.log(`Entity.methodAddComponent: adding component ${paramComponent.constructor.name} to entity ${this.#name}`);
+        } catch (e) {
+            console.log('Entity.methodAddComponent: added component (name unavailable)');
+        }*/
 
         // then we can initialize the component
         paramComponent.methodInitialize();
     }
+
     methodAddComponentWithSuffix(paramComponent, paramComponentNameSuffix)
     {
         // in case we do want multiples of each
