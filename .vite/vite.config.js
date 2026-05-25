@@ -6,7 +6,7 @@ import { defineConfig } from 'vite';
 // - ?raw imports for shader files work out of the box with Vite.
 
 // base: process.env.BASE_URL || './',
-//    base: "/ThreeJS-PWA-ECS-Surface-Stable-Dithering/",
+//    base: "/ThreeJS-PWA-ECS-Surface-Stable-Dithering-With-Vite/",
 // 
 
 export default defineConfig({
